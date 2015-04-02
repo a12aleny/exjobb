@@ -2,88 +2,114 @@
 <html>
 
 <head>
-    <title>Socket.IO chat</title>
-    <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    body {
-        font: 13px Helvetica, Arial;
-    }
-    form {
-        background: #000;
-        padding: 3px;
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-    }
-    form input {
-        border: 0;
-        padding: 10px;
-        width: 90%;
-        margin-right: .5%;
-    }
-    form button {
-        width: 9%;
-        background: rgb(130, 224, 255);
-        border: none;
-        padding: 10px;
-    }
-    #messages {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-    }
-    #messages li {
-        padding: 5px 10px;
-    }
-    #messages li:nth-child(odd) {
-        background: #eee;
-    }
-    </style>
-</head>
-
-<body>
-    <ul id="messages"></ul>
-    <form action="">
-        <input id="m" autocomplete="off" />
-        <button>Send</button>
-    </form>
-
-    <!--
-    //Endast lokal version
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-    var socket = io();
-    </script>-->
-
+    <title>Exjobb</title>
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+
     <script>
     var socket = io();
-    var nickname = prompt("Nickanme?");
-    console.log(nickname);
-    $('form').submit(function() {
 
-        socket.emit('chat message', nickname + ": " +  $('#m').val());
-        $('#m').val('');
-        return false;
+    //create the canvas
+
+    var ctx;
+    var x = 100;
+    var y = 100;
+    var dx = 1;
+    var dy = 1;
+    var canvasHeight = 500;
+    var canvasWidth = 300;
+    var cubeSize = 20;
+    var heroID;
+
+    var currentdate = new Date();
+    var minutes;
+	var seconds;
+	var milliseconds;
+	var time;
+
+
+
+
+    function init() {
+        var canvas = document.createElement("canvas");
+        ctx = canvas.getContext("2d");
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        document.body.appendChild(canvas);
+
+        // Game objects
+
+
+
+
+    }
+
+    function draw() {
+
+
+
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        ctx.beginPath();
+        ctx.fillStyle = "#0000ff";
+        ctx.rect(x, y, cubeSize, cubeSize);
+        ctx.closePath();
+        ctx.fill();
+
+        if (x < 0 || x + cubeSize > canvasWidth) dx = -dx;
+        if (y < 0 || y + cubeSize > canvasHeight) dy = -dy;
+        x += dx;
+        y += dy;
+
+
+        minutes = currentdate.getMinutes();
+		seconds = currentdate.getSeconds();
+		milliseconds = currentdate.getMilliseconds();
+		time = minutes + ' ' + seconds + ' ' + milliseconds;
+		console.log(currentdate.now());
+
+        //Update my palyers position on the server
+        socket.emit('updatePlayerPos', {
+            "id": heroID,
+            "x": x,
+            "y": y
+        });
+
+    }
+
+
+
+    socket.on('serverUpdatePlayerPos', function(msg) {
+        if (msg.id !== heroID) {
+            ctx.beginPath();
+            ctx.fillStyle = "#ff00ff";
+            ctx.rect(msg.x, msg.y, cubeSize, cubeSize);
+            ctx.closePath();
+            ctx.fill();
+            enemyY = msg.y;
+            enemyX = msg.x;
+            console.log(msg.id);
+        }
+
     });
 
-    socket.on('chat message', function(msg){
-      $('#messages').append($('<li>').text(msg));
+    socket.on('connected', function(msg) {
+        console.log(msg);
+        heroID = socket.io.engine.id;
+
     });
 
-    socket.on('connected', function(msg){
-      $('#messages').append($('<li>').text(msg));
+    socket.on('startshit', function(msg) {
+        setInterval(draw, 1000 / 30);
     });
 
-    socket.on('disconnected', function(msg){
-      $('#messages').append($('<li>').text(msg));
+    socket.on('disconnected', function(msg) {
+
     });
     </script>
+</head>
+
+<body onload="init();">
+
 
 </body>
 

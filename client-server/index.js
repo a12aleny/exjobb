@@ -9,23 +9,32 @@ app.get('/', function(req, res) {
 });
 
 
-var users = [];
+
+    var connectedUsers = 0;
+    var userStart = 2;
 
 
 
 io.on('connection', function(socket) {
-    console.log('an awesome user connected with id: '+socket.id);
-    io.emit('connected', 'User has connected');
 
-    socket.on('chat message', function(msg) {
-        io.emit('chat message', msg);
-        console.log('user with id: '+socket.id+' wrote: '+msg);
+    io.emit('connected', 'User has connected');
+    connectedUsers++;
+    console.log(connectedUsers);
+    if (connectedUsers === userStart) {
+         io.emit('startshit', 'FIRE');
+    };
+    socket.on('updatePlayerPos', function(msg) {
+        io.emit('serverUpdatePlayerPos', msg);
+        console.log(msg);
     });
+
+   
 
 
     socket.on('disconnect', function() {
         console.log('user disconnected...');
         io.emit('disconnected', 'User has disconnected');
+        connectedUsers--;
     });
 });
 
@@ -36,3 +45,5 @@ io.on('connection', function(socket) {
 http.listen(3000, function() {
     console.log('listening on *:3000');
 });
+
+
