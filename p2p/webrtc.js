@@ -159,10 +159,15 @@ var handleDataChannel = function(event) {
 // This is called on an incoming message from our peer
 // You probably want to overwrite this to do something more useful!
 var handleDataChannelMessage = function(event) {
-  console.log('Recieved Message: ' + event.data);
+ 
   console.log(event);
-  var test = document.getElementById("spelet");
-  test.innerHTML = test.innerHTML + event.data;
+  if (event.data === "barrelRoll") {
+    setInterval(draw, 1000 / 30);
+  }
+  else{
+    var testData = JSON.parse(event.data);
+    console.log('Recieved Message: ' + testData.id);
+  };
   
 };
 
@@ -171,6 +176,7 @@ var handleDataChannelOpen = function() {
   console.log('Data channel created!');
   dataChannel[remote].send('Hej, mitt ID är:'+ id +' <br>');
   numConnections ++;
+  connectedPeers.push(dataChannel[remote]);
 };
 
 // Called when the data channel has closed
@@ -209,6 +215,9 @@ var peerConnection=[];  // This is our WebRTC connection
 var dataChannel=[];     // This is our outgoing data channel within WebRTC
 var running = false; // Keep track of our connection state
 var disconnectToken;
+
+var connectedPeers = [];
+
 
 // Use Google's public servers for STUN
 // STUN is a component of the actual WebRTC connection
