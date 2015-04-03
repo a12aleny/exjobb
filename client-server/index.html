@@ -12,20 +12,21 @@
     //create the canvas
 
     var ctx;
-    var x = 100;
-    var y = 100;
+    var x = 50;
+    var y = 50;
     var dx = 1;
     var dy = 1;
-    var canvasHeight = 500;
-    var canvasWidth = 300;
+    var canvasHeight = 100;
+    var canvasWidth = 150;
     var cubeSize = 20;
     var heroID;
+    var theArray = [];
 
-    var currentdate = new Date();
-    var minutes;
-	var seconds;
-	var milliseconds;
-	var time;
+    var started;
+    var iPressed = false;
+    var i = 0;
+    var theInterval;
+    var theOutputString="";
 
 
 
@@ -46,7 +47,20 @@
 
     function draw() {
 
-
+    	if (performance.now()-started > 10000 && iPressed == true) {
+    		var a = window.document.createElement('a');
+    		for (var j = 1; j < theArray.length; j++) {
+    			theOutputString += theArray[j].toString() + "\n";
+    		};
+		    a.href = window.URL.createObjectURL(new Blob([theOutputString], {
+		        type: 'text/csv'
+		    }));
+		    a.download = 'statistic.csv';
+		    document.body.appendChild(a);
+		    a.click();
+		    document.body.removeChild(a);
+		    clearInterval(theInterval);
+    	};
 
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
         ctx.beginPath();
@@ -60,19 +74,18 @@
         x += dx;
         y += dy;
 
-
-        minutes = currentdate.getMinutes();
-		seconds = currentdate.getSeconds();
-		milliseconds = currentdate.getMilliseconds();
-		time = minutes + ' ' + seconds + ' ' + milliseconds;
-		console.log(currentdate.now());
-
+		
+       i++;
         //Update my palyers position on the server
         socket.emit('updatePlayerPos', {
             "id": heroID,
             "x": x,
-            "y": y
+            "y": y,
+            "t": i/*,
+            "t": Date.now()*/
         });
+        theArray[i] = performance.now();
+         
 
     }
 
@@ -87,29 +100,38 @@
             ctx.fill();
             enemyY = msg.y;
             enemyX = msg.x;
-            console.log(msg.id);
+            /*console.log(msg.id);*/
+        }
+        else{
+        	theArray[msg.t] = performance.now() - theArray[msg.t];
         }
 
     });
 
     socket.on('connected', function(msg) {
-        console.log(msg);
+        /*console.log(msg);*/
         heroID = socket.io.engine.id;
 
     });
 
     socket.on('startshit', function(msg) {
-        setInterval(draw, 1000 / 30);
+    	started = performance.now();
+        theInterval = setInterval(draw, 1000 / 30);
     });
 
     socket.on('disconnected', function(msg) {
 
     });
+
+    function doABarrelRoll(){
+    	iPressed = true;
+    	socket.emit('doABarrelRoll', 'Nu kör vi!');
+    }
     </script>
 </head>
 
 <body onload="init();">
-
+<button onclick="doABarrelRoll();">FIREEEEEEEE</button>
 
 </body>
 

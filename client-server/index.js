@@ -9,23 +9,18 @@ app.get('/', function(req, res) {
 });
 
 
-
-    var connectedUsers = 0;
-    var userStart = 2;
-
-
-
 io.on('connection', function(socket) {
 
     io.emit('connected', 'User has connected');
-    connectedUsers++;
-    console.log(connectedUsers);
-    if (connectedUsers === userStart) {
-         io.emit('startshit', 'FIRE');
-    };
+         
+    
     socket.on('updatePlayerPos', function(msg) {
         io.emit('serverUpdatePlayerPos', msg);
         console.log(msg);
+    });
+
+    socket.on('doABarrelRoll', function(msg){
+        io.emit('startshit', 'FIRE');
     });
 
    
@@ -34,7 +29,6 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function() {
         console.log('user disconnected...');
         io.emit('disconnected', 'User has disconnected');
-        connectedUsers--;
     });
 });
 
