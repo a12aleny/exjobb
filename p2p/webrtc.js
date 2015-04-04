@@ -115,7 +115,7 @@ var handleSignalChannelMessage = function(snapshot) {
 // Add listener functions to ICE Candidate events
 var startSendingCandidates = function(remoteID) {
   peerConnection[remoteID].oniceconnectionstatechange = handleICEConnectionStateChange;
-  peerConnection[remoteID].onicecandidate = handleICECandidate;
+  peerConnection[remoteID].onicecandidate = handleICECandidate.bind(remoteID);
   remote=remoteID;
 };
 
@@ -133,14 +133,15 @@ var handleICEConnectionStateChange = function() {
 var handleICECandidate = function(event) {
   var candidate = event.candidate;////////////////////////////////////I DENNA FUNKTION LIGGER PROBLEMET
   console.log(event.candidate);
+  console.log(this.toString());
   if (candidate) {
     candidate.type = 'candidate';
     /*for (var i = 0; i < pplAnnounce.length; i++) {
       console.log('Sending candidate to ' + pplAnnounce[i]);
       sendSignalChannelMessage(candidate, pplAnnounce[i]);
     };*/
-    console.log('Sending candidate to ' + remote);
-    sendSignalChannelMessage(candidate, remote);
+    console.log('Sending candidate to ' + this.toString());
+    sendSignalChannelMessage(candidate, this.toString());
   } else {
     console.log('All candidates sent');
   }
@@ -186,9 +187,9 @@ var handleDataChannelMessage = function(event) {
 // This is called when the WebRTC sending data channel is offically 'open'
 var handleDataChannelOpen = function() {
   console.log('Data channel created!');
-  dataChannel[remote].send('Hej, mitt ID är:'+ id +' <br>');
+  dataChannel[this.toString()].send('Hej, mitt ID är:'+ id +' <br>');
   numConnections ++;
-  connectedPeers.push(dataChannel[remote]);
+  connectedPeers.push(dataChannel[this.toString()]);
 };
 
 // Called when the data channel has closed
@@ -215,7 +216,7 @@ var initiateWebRTCState = function(remoteID) {
   peerConnection[remoteID].ondatachannel = handleDataChannel;
   dataChannel[remoteID] = peerConnection[remoteID].createDataChannel('myDataChannelwith ' + remoteID);
   dataChannel[remoteID].onmessage = handleDataChannelMessage;
-  dataChannel[remoteID].onopen = handleDataChannelOpen;
+  dataChannel[remoteID].onopen = handleDataChannelOpen.bind(remoteID);
   console.log("initiateWebRTCState kördes");
 };
 
