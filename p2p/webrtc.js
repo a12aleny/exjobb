@@ -170,14 +170,15 @@ var handleDataChannelMessage = function(event) {
     setInterval(draw, 1000 / 30);
   }
   else{
-    var testData = JSON.parse(event.data);
+    /*var testData = JSON.parse(event.data);
             ctx.beginPath();
             ctx.fillStyle = "#ff00ff";
             ctx.rect(testData.x, testData.y, cubeSize, cubeSize);
             ctx.closePath();
             ctx.fill();
             enemyY = testData.y;
-            enemyX = testData.x;
+            enemyX = testData.x;*/
+            alert(event.data);
   };
   
 };
