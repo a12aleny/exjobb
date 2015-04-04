@@ -31,13 +31,15 @@ var sendAnnounceChannelMessage = function() {
 var handleAnnounceChannelMessage = function(snapshot) {
   var message = snapshot.val();
 
- 
+  
 
 
   if (message.id != id && message.sharedKey == sharedKey) {
     console.log('Discovered matching announcement from ' + message.id);
   console.log('Jag är: ' + disconnectToken.key().toString());
 
+    /*Möjlig lösning på fleranslutningsproblemet?
+    pplAnnounce.push(message.id);*/
     
     console.log('JAG försöker ansluta TILL: ' + snapshot.key() + 'Och: ' + message.id);
 
@@ -131,9 +133,12 @@ var handleICEConnectionStateChange = function() {
 var handleICECandidate = function(event) {
   var candidate = event.candidate;////////////////////////////////////I DENNA FUNKTION LIGGER PROBLEMET
   console.log(event.candidate);
-  console.log('!!!!!!!!!!!!!!!!!!! : ' + event);
   if (candidate) {
     candidate.type = 'candidate';
+    /*for (var i = 0; i < pplAnnounce.length; i++) {
+      console.log('Sending candidate to ' + pplAnnounce[i]);
+      sendSignalChannelMessage(candidate, pplAnnounce[i]);
+    };*/
     console.log('Sending candidate to ' + remote);
     sendSignalChannelMessage(candidate, remote);
   } else {
@@ -166,7 +171,13 @@ var handleDataChannelMessage = function(event) {
   }
   else{
     var testData = JSON.parse(event.data);
-    console.log('Recieved Message: ' + testData.id);
+            ctx.beginPath();
+            ctx.fillStyle = "#ff00ff";
+            ctx.rect(testData.x, testData.y, cubeSize, cubeSize);
+            ctx.closePath();
+            ctx.fill();
+            enemyY = testData.y;
+            enemyX = testData.x;
   };
   
 };
@@ -215,6 +226,7 @@ var peerConnection=[];  // This is our WebRTC connection
 var dataChannel=[];     // This is our outgoing data channel within WebRTC
 var running = false; // Keep track of our connection state
 var disconnectToken;
+var pplAnnounce = [];
 
 var connectedPeers = [];
 
