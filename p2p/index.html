@@ -24,7 +24,10 @@
     var iPressed = false;
     var i = 0;
     var theInterval;
+    var theArray=[];
+    var thePongArray=[];
     var theOutputString="";
+    var sendPacket;
 
 
 
@@ -40,20 +43,23 @@
 
     function draw() {
 
-    	/*if (performance.now()-started > 10000 && iPressed == true) {
+    	if (performance.now()-started > 10000 && iPressed == true) {
     		var a = window.document.createElement('a');
+    		for (var z = 1; z < i; z++) {
+    			theArray[z] = thePongArray[z] - theArray[z];
+    		};
     		for (var j = 1; j < theArray.length; j++) {
     			theOutputString += theArray[j].toString() + "\n";
     		};
 		    a.href = window.URL.createObjectURL(new Blob([theOutputString], {
 		        type: 'text/csv'
 		    }));
-		    a.download = 'statistic.csv';
+		    a.download = 'statistic-p2p.csv';
 		    document.body.appendChild(a);
 		    a.click();
 		    document.body.removeChild(a);
 		    clearInterval(theInterval);
-    	};*/
+    	};
 
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
         ctx.beginPath();
@@ -69,18 +75,19 @@
 
 		
        i++;
-        //Update my palyers position on the server
+        //Update my plyers position on the server
 
-        for (var j = 0; j < connectedPeers.length; j++) {
-    		connectedPeers[j].send(JSON.stringify({
+        sendPacket = JSON.stringify({
     		            "id": id,
     		            "x": x,
     		            "y": y,
     		            "t": i
-    		        }));
+    		        });
+        for (var j = 0; j < connectedPeers.length; j++) {
+    		connectedPeers[j].send(sendPacket);
     	};
        
-       /* theArray[i] = performance.now();*/
+        theArray[i] = performance.now();
          
 
     }
@@ -88,10 +95,12 @@
 
      function doABarrelRoll(){
     	iPressed = true;
-    	for (var i = 0; i < connectedPeers.length; i++) {
-    		connectedPeers[i].send("barrelRoll");
+    	for (var k = 0; k < connectedPeers.length; k++) {
+    		console.log(connectedPeers[k]);
+    		connectedPeers[k].send(JSON.stringify({"msg": "start"}));
     	};
-    	setInterval(draw, 1000 / 30);
+    	started = performance.now();
+    	theInterval = setInterval(draw, 1000 / 30);
     	
     }
 </script>

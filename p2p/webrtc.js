@@ -165,22 +165,27 @@ var handleDataChannel = function(event) {
 // This is called on an incoming message from our peer
 // You probably want to overwrite this to do something more useful!
 var handleDataChannelMessage = function(event) {
- 
-  console.log(event);
-  if (event.data === "barrelRoll") {
-    setInterval(draw, 1000 / 30);
+ var testData = JSON.parse(event.data);
+ console.log(event);
+  if (testData.msg == 'start') {
+    console.log("STARTEEEEEEE");
+    theInterval = setInterval(draw, 1000 / 30);
+
   }
-  else{
-    /*var testData = JSON.parse(event.data);
-            ctx.beginPath();
-            ctx.fillStyle = "#ff00ff";
-            ctx.rect(testData.x, testData.y, cubeSize, cubeSize);
-            ctx.closePath();
-            ctx.fill();
-            enemyY = testData.y;
-            enemyX = testData.x;*/
-            alert(event.data);
-  };
+  else if (typeof testData.id !== 'undefined'){
+    
+    ctx.beginPath();
+    ctx.fillStyle = "#ff00ff";
+    ctx.rect(testData.x, testData.y, cubeSize, cubeSize);
+    ctx.closePath();
+    ctx.fill();
+
+    dataChannel[testData.id].send(JSON.stringify({"p" : testData.t}));
+  }
+  else if(typeof testData.p !== 'undefined'){
+    
+    thePongArray[testData.p] = performance.now(); 
+  }
   
 };
 
