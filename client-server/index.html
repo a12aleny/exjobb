@@ -12,16 +12,18 @@
     //create the canvas
 
     var ctx;
-    var x = 50;
-    var y = 50;
     var dx = 1;
     var dy = 1;
     var canvasHeight = 100;
     var canvasWidth = 150;
+    var x = 50;
+    var y = 50;
     var cubeSize = 20;
     var heroID;
     var theArray = [];
+    var thePongArray = [];
 
+    var number;
     var started;
     var iPressed = false;
     var i = 0;
@@ -48,26 +50,31 @@
     function draw() {
 
     	if (performance.now()-started > 10000 && iPressed == true) {
+            socket.emit('stop', 'stop');
     		var a = window.document.createElement('a');
+            for (var z = 1; z < i; z++) {
+                theArray[z] = thePongArray[z] - theArray[z];
+            };
     		for (var j = 1; j < theArray.length; j++) {
     			theOutputString += theArray[j].toString() + "\n";
     		};
 		    a.href = window.URL.createObjectURL(new Blob([theOutputString], {
 		        type: 'text/csv'
 		    }));
-		    a.download = 'statistic.csv';
+		    a.download = 'statistic-websockets-' + number + '.csv';
 		    document.body.appendChild(a);
 		    a.click();
 		    document.body.removeChild(a);
 		    clearInterval(theInterval);
     	};
 
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-        ctx.beginPath();
-        ctx.fillStyle = "#0000ff";
-        ctx.rect(x, y, cubeSize, cubeSize);
-        ctx.closePath();
-        ctx.fill();
+        // ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        // ctx.beginPath();
+        // ctx.fillStyle = "#0000ff";
+        // ctx.rect(x, y, cubeSize, cubeSize);
+        // ctx.closePath();
+        // ctx.fill();
+
 
         if (x < 0 || x + cubeSize > canvasWidth) dx = -dx;
         if (y < 0 || y + cubeSize > canvasHeight) dy = -dy;
@@ -81,8 +88,7 @@
             "id": heroID,
             "x": x,
             "y": y,
-            "t": i/*,
-            "t": Date.now()*/
+            "t": i
         });
         theArray[i] = performance.now();
          
@@ -93,23 +99,23 @@
 
     socket.on('serverUpdatePlayerPos', function(msg) {
         if (msg.id !== heroID) {
-            ctx.beginPath();
-            ctx.fillStyle = "#ff00ff";
-            ctx.rect(msg.x, msg.y, cubeSize, cubeSize);
-            ctx.closePath();
-            ctx.fill();
-            enemyY = msg.y;
-            enemyX = msg.x;
-            /*console.log(msg.id);*/
-        }
-        else{
-        	theArray[msg.t] = performance.now() - theArray[msg.t];
+            // ctx.beginPath();
+            // ctx.fillStyle = "#ff00ff";
+            // ctx.rect(msg.x, msg.y, cubeSize, cubeSize);
+            // ctx.closePath();
+            // ctx.fill();
+
+            socket.emit('pong', {"id": msg.id, "p": msg.t});
         }
 
     });
-
+    socket.on('pong', function(msg){
+        if(iPressed===true){
+            thePongArray[msg.p] = performance.now();
+        }
+        
+    });
     socket.on('connected', function(msg) {
-        /*console.log(msg);*/
         heroID = socket.io.engine.id;
 
     });
@@ -122,16 +128,24 @@
     socket.on('disconnected', function(msg) {
 
     });
+    socket.on('stopdraw', function(msg){
+        clearInterval(theInterval);
+    });
 
     function doABarrelRoll(){
+        number = prompt("Antal klienter?");
     	iPressed = true;
     	socket.emit('doABarrelRoll', 'Nu kör vi!');
+    }
+    function openNew(){
+        window.open("http://localhost:3000/", "_blank", "width=160, height=160");
     }
     </script>
 </head>
 
 <body onload="init();">
-<button onclick="doABarrelRoll();">FIREEEEEEEE</button>
+<button onclick="doABarrelRoll();">Go</button>
+<button onclick="openNew();">+1</button>
 
 </body>
 

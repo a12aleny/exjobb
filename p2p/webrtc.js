@@ -174,11 +174,11 @@ var handleDataChannelMessage = function(event) {
   }
   else if (typeof testData.id !== 'undefined'){
     
-    ctx.beginPath();
+    /*ctx.beginPath();
     ctx.fillStyle = "#ff00ff";
     ctx.rect(testData.x, testData.y, cubeSize, cubeSize);
     ctx.closePath();
-    ctx.fill();
+    ctx.fill();*/
 
     dataChannel[testData.id].send(JSON.stringify({"p" : testData.t}));
   }
@@ -192,9 +192,31 @@ var handleDataChannelMessage = function(event) {
 // This is called when the WebRTC sending data channel is offically 'open'
 var handleDataChannelOpen = function() {
   console.log('Data channel created!');
+  var skickaTill = this.toString();
   dataChannel[this.toString()].send('Hej, mitt ID är:'+ id +' <br>');
   numConnections ++;
   connectedPeers.push(dataChannel[this.toString()]);
+
+  signalChannel.orderByKey().once("value", function(snapshot){/*
+    console.log(snapshot.ref() + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");*/
+
+    snapshot.forEach(function(childSnapshot){
+      var asdf = childSnapshot.val();
+      /*console.log(asdf.sender);
+
+      console.log(childSnapshot.key());
+
+      console.log(childSnapshot.key().toString()+ " BRÖÖÖÖL");
+      console.log(skickaTill + " ????????????");*/
+      if (asdf.sender == skickaTill){
+        var removeThisURL = new Firebase("https://p2pexjobb.firebaseio.com/messages/" + id + "/" + childSnapshot.key().toString());
+        console.log("HÄR ÄR DEN: " + removeThisURL);
+        
+        removeThisURL.remove();
+      }
+    })
+  });
+
 };
 
 // Called when the data channel has closed
@@ -256,11 +278,11 @@ id = Math.random().toString().replace('.', '');
 // Each peer waits in the announcement channel to find its matching identifier
 // When it finds its matching identifier, it initiates a WebRTC offer with
 // that client. This unique identifier can be pretty much anything in practice.
-sharedKey = prompt("Please enter a shared identifier");
+sharedKey = "1";
 
 // Configure, connect, and set up Firebase
 // You probably want to replace the text below with your own Firebase URL
-var firebaseUrl = 'https://blistering-inferno-9772.firebaseio.com/';
+var firebaseUrl = 'https://p2pexjobb2.firebaseio.com/';
 var database = new Firebase(firebaseUrl);
 var announceChannel = database.child('announce');
 var signalChannel = database.child('messages').child(id);

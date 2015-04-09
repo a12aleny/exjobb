@@ -10,20 +10,24 @@ app.get('/', function(req, res) {
 
 
 io.on('connection', function(socket) {
-
-    io.emit('connected', 'User has connected');
-         
+    
+    console.log(socket.id + ' anslöt!')
+    socket.emit('connected', "Ge klienter ett ID");     
     
     socket.on('updatePlayerPos', function(msg) {
         io.emit('serverUpdatePlayerPos', msg);
-        console.log(msg);
+      
     });
 
     socket.on('doABarrelRoll', function(msg){
         io.emit('startshit', 'FIRE');
     });
-
-   
+    socket.on('pong', function(msg){
+        socket.broadcast.to(msg.id).emit('pong', msg);
+    });
+    socket.on('stop', function (msg) {
+        socket.emit('stopdraw', msg);
+    });
 
 
     socket.on('disconnect', function() {
