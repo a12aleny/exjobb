@@ -5,7 +5,11 @@
 	<title>Datachannel test</title>
 	<script src="https://cdn.firebase.com/js/client/2.2.2/firebase.js"></script>
 	<script src="webrtc.js"> </script>
-	<script src="spelet.js"> </script>
+	<style>
+	canvas{
+		border: solid 1px black;	
+	}
+		</style>
 </head>
 
 <script>
@@ -29,6 +33,12 @@
     var thePongArray=[];
     var theOutputString="";
     var sendPacket;
+    var testNumber = 0;
+    var speed = 30;
+    var dataAmnt = "Normal";
+    var junkData = " ";
+    var packetLossArray=[];
+    var testNumberReciever=0;
 
 
 
@@ -38,65 +48,143 @@
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
         document.body.appendChild(canvas);
-
+        
 
     }
 
     function draw() {
 
-    	if (performance.now()-started > 10000 && iPressed == true) {
-    		var a = window.document.createElement('a');
-    		for (var z = 1; z < i; z++) {
-    			theArray[z] = thePongArray[z] - theArray[z];
-    		};
-    		for (var j = 1; j < theArray.length; j++) {
-    			theOutputString += theArray[j].toString() + "\n";
-    		};
-		    a.href = window.URL.createObjectURL(new Blob([theOutputString], {
-		        type: 'text/csv'
-		    }));
-		    a.download = 'statistic-webrtc-' + number + '.csv';
-		    document.body.appendChild(a);
-		    a.click();
-		    document.body.removeChild(a);
-		    clearInterval(theInterval);
-    	};
+    	if (performance.now()-started > 12000 && iPressed == true) {
+    		if(thePongArray.length !== theArray.length){
+    			console.log(thePongArray.length + ' / ' + theArray.length);
+    			
+    		}else{
+	    		var a = window.document.createElement('a');
+	    		for (var z = 1; z < i; z++) {
+	    			theArray[z] = thePongArray[z] - theArray[z];
+	    		};
+	    		for (var j = 1; j < theArray.length; j++) {
+	    			theOutputString += theArray[j] + ';' + packetLossArray[j] + "\n";
+	    		};
+			    a.href = window.URL.createObjectURL(new Blob([theOutputString], {
+			        type: 'text/csv;charset:UTF-8;'
+			    }));
+			    alert("thefuck");
+			    a.download = 'statistic-webrtc-' + number + '-speed-'+ speed +'-data-'+dataAmnt+'.csv';
+			    document.body.appendChild(a);
+			    a.click();
+			    document.body.removeChild(a);
+			    clearInterval(theInterval);
+			    testNumber ++;
+			    
+			    //Reset test for other variables
+			    for (var k = 0; k < connectedPeers.length; k++) {
+		    		connectedPeers[k].send(JSON.stringify({"msg": "kill"}));
+		    	};
 
-        /*ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-        ctx.beginPath();
-        ctx.fillStyle = "#0000ff";
-        ctx.rect(x, y, cubeSize, cubeSize);
-        ctx.closePath();
-        ctx.fill();*/
 
-        if (x < 0 || x + cubeSize > canvasWidth) dx = -dx;
-        if (y < 0 || y + cubeSize > canvasHeight) dy = -dy;
-        x += dx;
-        y += dy;
+		    	if (testNumber == 1) {//Same test but with higher updatespeed
+					i=0;
+					started = performance.now();
+					theArray=[];
+					thePongArray=[];
+					packetLossArray=[];
 
-		
-       i++;
-        //Update my plyers position on the server
+    				theOutputString="";
 
-        sendPacket = JSON.stringify({
-    		            "id": id,
-    		            "x": x,
-    		            "y": y,
-    		            "t": i
-    		        });
-        for (var j = 0; j < connectedPeers.length; j++) {
-    		connectedPeers[j].send(sendPacket);
-    	};
-       
-        theArray[i] = performance.now();
+    				speed = 60;
+    				
+	
+    				//Start next test
+    				for (var k = 0; k < connectedPeers.length; k++) {
+    				connectedPeers[k].send(JSON.stringify({"msg": "start"}));
+    				theInterval = setInterval(draw, 1000 / 60);
+
+		    		} 
+		    	}if (testNumber==2) {
+		    		i=0;
+					started = performance.now();
+					theArray=[];
+					thePongArray=[];
+					packetLossArray=[];
+					theOutputString="";
+    				dataAmnt="High";
+    				junkData="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ullam voluptates perferendis inventore voluptate reiciendis est, quis odio illum harum dolores maxime tempora rem rerum ut exercitationem facilis molestias consequuntur necessitatibus?";  				
+	
+    				//Start next test
+    				for (var k = 0; k < connectedPeers.length; k++) {
+    				connectedPeers[k].send(JSON.stringify({"msg": "start"}));
+					theInterval = setInterval(draw, 1000 / 30);
+
+		    	} 
+
+		   	 	}if (testNumber==3) {
+		    		i=0;
+					started = performance.now();
+					theArray=[];
+					thePongArray=[];
+					packetLossArray=[];
+					theOutputString="";
+    				dataAmnt="High";
+    				junkData="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ullam voluptates perferendis inventore voluptate reiciendis est, quis odio illum harum dolores maxime tempora rem rerum ut exercitationem facilis molestias consequuntur necessitatibus?";    				
+	
+    				//Start next test
+    				for (var k = 0; k < connectedPeers.length; k++) {
+    				connectedPeers[k].send(JSON.stringify({"msg": "start"}));
+					theInterval = setInterval(draw, 1000 / 60);
+		    	}
+		    	if (testNumber>4) {
+		    		clearInterval(theInterval);
+		    		for (var k = 0; k < connectedPeers.length; k++) {
+		    		connectedPeers[k].send(JSON.stringify({"msg": "kill"}));
+		    		}
+		    		
+		    		
+		    	};
+
+				
+    		}
+		}
+    	}else{
+
+	        /*ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+	        ctx.beginPath();
+	        ctx.fillStyle = "#0000ff";
+	        ctx.rect(x, y, cubeSize, cubeSize);
+	        ctx.closePath();
+	        ctx.fill();*/
+
+	        if (x < 0 || x + cubeSize > canvasWidth) dx = -dx;
+	        if (y < 0 || y + cubeSize > canvasHeight) dy = -dy;
+	        x += dx;
+	        y += dy;
+
+			//Number of times position has been updated
+	        i++;
+	        packetLossArray[i]=0;
+	        //Update my players position on the server
+	        sendPacket = JSON.stringify({
+	    		            "id": id,
+	    		            "x": x,
+	    		            "y": y,
+	    		            "t": i,
+	    		            "d": junkData
+	    		        });
+	        //Send new position to all connected peers
+	        for (var j = 0; j < connectedPeers.length; j++) {
+	    		connectedPeers[j].send(sendPacket);
+	    	};
+	        //Save this updates time in theArray on position "i"
+	        theArray[i] = performance.now();
+	        console.log(i + "PING" + theArray[i]);
          
-
+		}
     }
 
 
      function doABarrelRoll(){
     	iPressed = true;
-    	number = prompt("Antal peers?");
+    	number = connectedPeers.length + 1;
     	for (var k = 0; k < connectedPeers.length; k++) {
     		connectedPeers[k].send(JSON.stringify({"msg": "start"}));
     	};
@@ -105,7 +193,7 @@
     	
     }
     function openNew(){
-    	window.open("file:///E:/Dropbox/Exjobb/exjobb/p2p/index.html", "_blank", "width=160, height=160");
+    	window.open("http://webblabb.iki.his.se:81/a12aleny", "_blank", "width=160, height=160");
     }
 </script>
 <body onload="init();">

@@ -166,10 +166,34 @@ var handleDataChannel = function(event) {
 // You probably want to overwrite this to do something more useful!
 var handleDataChannelMessage = function(event) {
  var testData = JSON.parse(event.data);
- console.log(event);
   if (testData.msg == 'start') {
-    console.log("STARTEEEEEEE");
-    theInterval = setInterval(draw, 1000 / 30);
+    if (testNumberReciever==0 && iPressed !== true) {
+      theInterval = setInterval(draw, 1000 / 30);
+      testNumberReciever++;
+    }
+    if (testNumberReciever==1 && iPressed !== true) {
+      theInterval = setInterval(draw, 1000 / 60);
+      testNumberReciever++;
+    }
+    if (testNumberReciever==2 && iPressed !== true) {
+      theInterval = setInterval(draw, 1000 / 30);
+      testNumberReciever++;
+      junkData="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ullam voluptates perferendis inventore voluptate reiciendis est, quis odio illum harum dolores maxime tempora rem rerum ut exercitationem facilis molestias consequuntur necessitatibus?";
+    }
+    if (testNumberReciever==3 && iPressed !== true) {
+      theInterval = setInterval(draw, 1000 / 60);
+      testNumberReciever++;
+      junkData="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ullam voluptates perferendis inventore voluptate reiciendis est, quis odio illum harum dolores maxime tempora rem rerum ut exercitationem facilis molestias consequuntur necessitatibus?";
+    }
+    if (testNumberReciever>4 && iPressed !== true) {
+      clearInterval(theInterval);
+    }
+
+    
+
+  }
+  if (testData.msg == 'kill') {
+    clearInterval(theInterval);
 
   }
   else if (typeof testData.id !== 'undefined'){
@@ -183,8 +207,9 @@ var handleDataChannelMessage = function(event) {
     dataChannel[testData.id].send(JSON.stringify({"p" : testData.t}));
   }
   else if(typeof testData.p !== 'undefined'){
-    
-    thePongArray[testData.p] = performance.now(); 
+    packetLossArray[testData.p] = packetLossArray[testData.p] + 1;
+    thePongArray[testData.p] = performance.now();
+    console.log(testData.p + " PONG" + thePongArray[testData.p]);
   }
   
 };
@@ -209,8 +234,7 @@ var handleDataChannelOpen = function() {
       console.log(childSnapshot.key().toString()+ " BRÖÖÖÖL");
       console.log(skickaTill + " ????????????");*/
       if (asdf.sender == skickaTill){
-        var removeThisURL = new Firebase("https://p2pexjobb.firebaseio.com/messages/" + id + "/" + childSnapshot.key().toString());
-        console.log("HÄR ÄR DEN: " + removeThisURL);
+        var removeThisURL = new Firebase("https://p2pexjobb3.firebaseio.com/messages/" + id + "/" + childSnapshot.key().toString());
         
         removeThisURL.remove();
       }
@@ -282,10 +306,11 @@ sharedKey = "1";
 
 // Configure, connect, and set up Firebase
 // You probably want to replace the text below with your own Firebase URL
-var firebaseUrl = 'https://p2pexjobb2.firebaseio.com/';
+var firebaseUrl = 'https://p2pexjobb3.firebaseio.com/';
 var database = new Firebase(firebaseUrl);
 var announceChannel = database.child('announce');
 var signalChannel = database.child('messages').child(id);
+signalChannel.onDisconnect().remove();
 if (database) {};
 signalChannel.on('child_added', handleSignalChannelMessage);
 

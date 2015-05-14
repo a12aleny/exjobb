@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Exjobb</title>
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+<style>
+    canvas{
+        border: solid 1px black;    
+    }
+        </style>
+    <script>
+    var socket = io();
+
+    //create the canvas
+
+    var ctx;
+    var dx = 1;
+    var dy = 1;
+    var canvasHeight = 100;
+    var canvasWidth = 150;
+    var x = 50;
+    var y = 50;
+    var cubeSize = 20;
+    var heroID;
+    var theArray = [];
+    var thePongArray = [];
+
+    var number;
+    var started;
+    var iPressed = false;
+    var i = 0;
+    var theInterval;
+    var theOutputString="";
+
+
+
+
+    function init() {
+        var canvas = document.createElement("canvas");
+        ctx = canvas.getContext("2d");
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        document.body.appendChild(canvas);
+
+        // Game objects
+
+
+
+
+    }
+
+    function draw() {
+
+    	if (performance.now()-started > 10000 && iPressed == true) {
+            socket.emit('stop', 'stop');
+    		var a = window.document.createElement('a');
+            for (var z = 1; z < i; z++) {
+                theArray[z] = thePongArray[z] - theArray[z];
+            };
+    		for (var j = 1; j < theArray.length; j++) {
+    			theOutputString += theArray[j].toString() + "\n";
+    		};
+		    a.href = window.URL.createObjectURL(new Blob([theOutputString], {
+		        type: 'text/csv'
+		    }));
+		    a.download = 'statistic-websockets-' + number + '.csv';
+		    document.body.appendChild(a);
+		    a.click();
+		    document.body.removeChild(a);
+		    clearInterval(theInterval);
+    	};
+
+        // ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        // ctx.beginPath();
+        // ctx.fillStyle = "#0000ff";
+        // ctx.rect(x, y, cubeSize, cubeSize);
+        // ctx.closePath();
+        // ctx.fill();
+
+
+        if (x < 0 || x + cubeSize > canvasWidth) dx = -dx;
+        if (y < 0 || y + cubeSize > canvasHeight) dy = -dy;
+        x += dx;
+        y += dy;
+
+		
+       i++;
+        //Update my palyers position on the server
+        socket.emit('updatePlayerPos', {
+            "id": heroID,
+            "x": x,
+            "y": y,
+            "t": i
+        });
+        theArray[i] = Math.round(performance.now());
+         console.log(i + "PING" + theArray[i]);
+
+    }
+
+
+
+    socket.on('serverUpdatePlayerPos', function(msg) {
+        if (msg.id !== heroID) {
+            // ctx.beginPath();
+            // ctx.fillStyle = "#ff00ff";
+            // ctx.rect(msg.x, msg.y, cubeSize, cubeSize);
+            // ctx.closePath();
+            // ctx.fill();
+
+            socket.emit('pong', {"id": msg.id, "p": msg.t});
+        }
+
+    });
+    socket.on('pong', function(msg){
+        if(iPressed===true){
+            thePongArray[msg.p] = Math.round(performance.now());
+            console.log(msg.p + " PONG " + thePongArray[msg.p]);
+        }
+        
+    });
+    socket.on('connected', function(msg) {
+        heroID = socket.io.engine.id;
+
+    });
+
+    socket.on('startshit', function(msg) {
+    	started = performance.now();
+        theInterval = setInterval(draw, 1000 / 30);
+    });
+
+    socket.on('disconnected', function(msg) {
+
+    });
+    socket.on('stopdraw', function(msg){
+        clearInterval(theInterval);
+    });
+
+    function doABarrelRoll(){
+        number = prompt("Antal klienter?");
+    	iPressed = true;
+    	socket.emit('doABarrelRoll', 'Nu kör vi!');
+    }
+    function openNew(){
+        window.open("http://u193-11-163-156.studentnatet.se:3000/", "_blank", "width=160, height=160");
+    }
+    </script>
+</head>
+
+<body onload="init();">
+<button onclick="doABarrelRoll();">Go</button>
+<button onclick="openNew();">+1</button>
+
+</body>
+
+</html>
